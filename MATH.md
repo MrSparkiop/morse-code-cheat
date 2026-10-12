@@ -40,7 +40,7 @@ The letter gap is 4 units and the word gap is 10 units. Textbook Morse uses
 
 Adding these up:
 
-$$T(w) = u\,(2D + 4H + 3L + 6)$$
+$$T(w) = u(2D + 4H + 3L + 6)$$
 
 *Example*, **steak** = `... - . .- -.-` has $D = 6$, $H = 4$, $L = 5$:
 
@@ -52,7 +52,7 @@ The loops range from 13.2 s (*steak*) to 19.4 s.
 its deadline. At $f$ frames per second, every on or off part is therefore a
 little longer than nominal:
 
-$$d = k\,u + \delta, \qquad \delta \sim \mathcal{U}\!\left(0, \tfrac{1}{f}\right)$$
+$$d = k u + \delta, \qquad \delta \sim \mathcal{U}\left(0, \tfrac{1}{f}\right)$$
 
 At 60 fps that is 0 to 17 ms extra per part.
 
@@ -77,7 +77,7 @@ A yellow pixel needs both red and green high and blue low. White, grey and red
 pixels all score low, so they can't be mistaken for the lit lamp.
 
 The level of a region is the mean yellowness of its brightest pixels, the top
-$p = 15\%$ (at least 4 pixels):
+15 % ($p = 0.15$, at least 4 pixels):
 
 $$x = \frac{1}{k}\sum_{j=1}^{k} y_{(j)}, \qquad k = \max\bigl(4,\ \lfloor p \cdot N \rfloor\bigr)$$
 
@@ -112,7 +112,7 @@ Static things have $A \approx 0$, and the lamp has $A \approx 130$.
 room-light gain is estimated from the green channel $G$ of many sample points,
 compared with a reference frame:
 
-$$g = \operatorname{median}\left(\frac{G_\text{now}}{G_\text{ref}}\right)$$
+$$g = \mathrm{median}\left(\frac{G_\text{now}}{G_\text{ref}}\right)$$
 
 Amplitude is also measured on $Y/g$. A cell only counts as blinking if it
 blinks with the gain divided out too.
@@ -120,7 +120,7 @@ blinks with the gain divided out too.
 **Camera motion.** The program finds strong edges and checks whether each
 edge's gradient sign matches the previous frame:
 
-$$\text{agreement} = \frac{\#\{\text{strong gradients with the same sign}\}}{\#\{\text{strong gradients}\}}$$
+$$\text{agreement} = \frac{\text{strong gradients with the same sign}}{\text{all strong gradients}}$$
 
 Changing the light level never flips a gradient's sign, but moving the camera
 does. Low agreement marks the frame as "moving", and the decoders treat it as
@@ -187,8 +187,8 @@ least** what was seen. The same is true for the run happening right now.
 **Each word as a loop of elements.** Each word is written as a cycle of $n$
 elements, each with a unit count $k_i$:
 
-- on: $k \in \{1, 3\}$
-- off: $k \in \{1, 4, 10\}$
+- on: $k \in \lbrace 1, 3 \rbrace$
+- off: $k \in \lbrace 1, 4, 10 \rbrace$
 
 *Example*: **halls** starts `on 1, off 1, on 1, off 1, on 1, off 1, on 1, off 4, on 1, off 1, on 3, off 4, …`
 and ends with `off 10`, then starts again.
@@ -196,20 +196,20 @@ and ends with `off 10`, then starts again.
 **Duration model.** A run that really is element $i$ has a length close to
 $k_i u$, plus the frame delay $b$:
 
-$$p(d \mid k_i, u) = (1 - \varepsilon)\ \mathcal{N}\!\left(d;\ k_i u + b,\ \sigma_i^2\right) + \varepsilon\ p_\text{broad}(d)$$
+$$p(d \mid k_i, u) = (1 - \varepsilon)\ \mathcal{N}\left(d;\ k_i u + b,\ \sigma_i^2\right) + \varepsilon\ p_\text{broad}(d)$$
 
-$$\sigma_i^2 = (0.05\,k_i u)^2 + \sigma_0^2 + \sigma_\text{edge}^2$$
+$$\sigma_i^2 = (0.05 k_i u)^2 + \sigma_0^2 + \sigma_\text{edge}^2$$
 
 where:
 
 - $\sigma_0 = 8$ ms covers game frames and screen refresh.
 - $\sigma_\text{edge}$ comes from the time between captured frames.
-- $\varepsilon = 2\%$ is the chance of an odd run, and $p_\text{broad}$ is a
+- $\varepsilon = 0.02$ (2 %) is the chance of an odd run, and $p_\text{broad}$ is a
   wide density used for those runs.
 
 A censored run uses the probability of being *at least* that long:
 
-$$P(D \ge d) = 1 - \Phi\!\left(\frac{d - k_i u - b}{\sigma_i}\right)$$
+$$P(D \ge d) = 1 - \Phi\left(\frac{d - k_i u - b}{\sigma_i}\right)$$
 
 **Unknown starting point: the forward algorithm.** The program may start
 watching in the middle of the loop. So it tracks every possible position $i$ in
@@ -217,7 +217,7 @@ the loop at once:
 
 $$\alpha_t(i) = \log P(d_1, \dots, d_t,\ \text{run } t \text{ is element } i)$$
 
-$$\alpha_t(i) = \log p(d_t \mid k_i, u) + \operatorname{logsumexp}_j \Bigl[\alpha_{t-1}(j) + \log P(j \to i)\Bigr]$$
+$$\alpha_t(i) = \log p(d_t \mid k_i, u) + \mathrm{logsumexp}_j \Bigl[\alpha_{t-1}(j) + \log P(j \to i)\Bigr]$$
 
 The step from one run to the next, $P(j \to i)$, is almost always $i = j + 1$
 (the next element of the loop). Small probabilities allow for mistakes:
@@ -236,7 +236,7 @@ can run up to about 25% slower or faster without fooling the decoder.
 
 **Score of a word.** Sum over all positions and all speeds:
 
-$$\mathcal{L}(w) = \log \sum_{u} \pi(u) \sum_{i=1}^{n} e^{\alpha_T(i,\,u)} - \log n$$
+$$\mathcal{L}(w) = \log \sum_{u} \pi(u) \sum_{i=1}^{n} e^{\alpha_T(i, u)} - \log n$$
 
 The $-\log n$ term means every starting point was equally likely.
 
